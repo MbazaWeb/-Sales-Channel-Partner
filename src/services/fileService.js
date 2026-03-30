@@ -93,3 +93,18 @@ export async function getApplicationFilesWithUrls(applicationId) {
 		})),
 	)
 }
+
+export async function deleteApplicationFiles(applicationId) {
+	const documents = await getApplicationFiles(applicationId)
+
+	if (!documents.length) {
+		return
+	}
+
+	const client = requireSupabase()
+	const { error } = await client.storage.from(STORAGE_BUCKET).remove(documents.map((document) => document.file_path))
+
+	if (error) {
+		throw error
+	}
+}

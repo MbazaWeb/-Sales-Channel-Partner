@@ -7,12 +7,15 @@ import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import ApplicationReview from './pages/admin/ApplicationReview.jsx'
 import Applications from './pages/admin/Applications.jsx'
 import Locations from './pages/admin/Locations.jsx'
+import AdminSettings from './pages/admin/AdminSettings.jsx'
+import Users from './pages/admin/Users.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Login from './pages/auth/Login.jsx'
 import Signup from './pages/auth/Signup.jsx'
 import ApplicationForm from './pages/user/ApplicationForm.jsx'
 import Dashboard from './pages/user/Dashboard.jsx'
 import MyApplications from './pages/user/MyApplications.jsx'
+import Settings from './pages/user/Settings.jsx'
 
 const router = createBrowserRouter([
 	{
@@ -46,6 +49,10 @@ const router = createBrowserRouter([
 						path: 'apply',
 						element: <ApplicationForm />,
 					},
+					{
+						path: 'settings',
+						element: <Settings />,
+					},
 				],
 			},
 			{
@@ -64,8 +71,16 @@ const router = createBrowserRouter([
 						element: <ApplicationReview />,
 					},
 					{
+						path: 'admin/users',
+						element: <Users />,
+					},
+					{
 						path: 'admin/locations',
 						element: <Locations />,
+					},
+					{
+						path: 'admin/settings',
+						element: <AdminSettings />,
 					},
 				],
 			},

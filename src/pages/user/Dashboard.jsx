@@ -24,6 +24,10 @@ function StatusBadge({ status }) {
 function Dashboard() {
 	const { applications, loading, error } = useApplications()
 	const latestApplication = applications[0]
+	const total = applications.length
+	const pending = applications.filter((application) => application.status === APPLICATION_STATUS.PENDING).length
+	const approved = applications.filter((application) => application.status === APPLICATION_STATUS.APPROVED).length
+	const rejected = applications.filter((application) => application.status === APPLICATION_STATUS.REJECTED).length
 
 	async function handleDownload(application) {
 		const documents = await getApplicationFilesWithUrls(application.id)
@@ -57,6 +61,12 @@ function Dashboard() {
 
 			{latestApplication ? (
 				<div className="space-y-6">
+					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Total</p><p className="mt-3 text-3xl font-semibold text-slate-900">{total}</p></Card>
+						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Pending</p><p className="mt-3 text-3xl font-semibold text-slate-900">{pending}</p></Card>
+						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Approved</p><p className="mt-3 text-3xl font-semibold text-slate-900">{approved}</p></Card>
+						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Rejected</p><p className="mt-3 text-3xl font-semibold text-slate-900">{rejected}</p></Card>
+					</div>
 					<div className="grid gap-6 xl:grid-cols-[0.72fr_1fr]">
 					<Card className="p-5 sm:p-6">
 						<p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Latest submission</p>

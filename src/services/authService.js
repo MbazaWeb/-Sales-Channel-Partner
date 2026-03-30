@@ -1,12 +1,24 @@
 import { requireSupabase } from './supabaseClient.js'
 import { isReservedAdminEmail } from '../config/roles.js'
 
+function normalizeAuthError(error) {
+	if (!error) {
+		return null
+	}
+
+	if (error.message === 'Auth session missing!') {
+		return new Error('Your session expired. Sign in again to continue.')
+	}
+
+	return error
+}
+
 export async function login({ email, password }) {
 	const client = requireSupabase()
 	const { data, error } = await client.auth.signInWithPassword({ email, password })
 
 	if (error) {
-		throw error
+		throw normalizeAuthError(error)
 	}
 
 	return data.user
@@ -27,7 +39,7 @@ export async function signup({ email, password, metadata = {} }) {
 	})
 
 	if (error) {
-		throw error
+		throw normalizeAuthError(error)
 	}
 
 	return data.user
@@ -38,7 +50,7 @@ export async function logout() {
 	const { error } = await client.auth.signOut()
 
 	if (error) {
-		throw error
+		throw normalizeAuthError(error)
 	}
 }
 
@@ -47,7 +59,29 @@ export async function getCurrentUser() {
 	const { data, error } = await client.auth.getUser()
 
 	if (error) {
-		throw error
+		throw normalizeAuthError(error)
+	}
+
+	return data.user
+}
+
+export async function updateAccountMetadata(metadata) {
+	const client = requireSupabase()
+	const { data, error } = await client.auth.updateUser({ data: metadata })
+
+	if (error) {
+		throw normalizeAuthError(error)
+	}
+
+	return data.user
+}
+
+export async function changeAccountPassword(password) {
+	const client = requireSupabase()
+	const { data, error } = await client.auth.updateUser({ password })
+
+	if (error) {
+		throw normalizeAuthError(error)
 	}
 
 	return data.user

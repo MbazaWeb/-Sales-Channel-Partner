@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import { useApplications } from '../../hooks/useApplications.js'
-import { getApplicationFilesWithUrls } from '../../services/fileService.js'
+import { deleteApplicationFiles, getApplicationFilesWithUrls } from '../../services/fileService.js'
 import {
 	ADMIN_REVIEW_FIELDS,
 	APPLICATION_STATUS,
@@ -69,7 +69,7 @@ function AdminChoiceGroup({ label, options, selectedValue, error, onSelect }) {
 function ApplicationReview() {
 	const navigate = useNavigate()
 	const { applicationId } = useParams()
-	const { applications, loading, error, changeStatus, saveFormData } = useApplications()
+	const { applications, loading, error, changeStatus, saveFormData, removeApplication } = useApplications()
 	const application = applications.find((entry) => entry.id === applicationId)
 	const [reviewFormData, setReviewFormData] = useState({})
 	const [reviewErrors, setReviewErrors] = useState({})
@@ -131,6 +131,26 @@ function ApplicationReview() {
 
 		const documents = await getApplicationFilesWithUrls(application.id)
 		await downloadApplicationPdf(application, documents)
+	}
+
+	async function handleDelete() {
+		if (!application) {
+			return
+		}
+
+		const confirmed = window.confirm(`Delete application for ${application.formData.tradingAs || application.applicant_email}?`)
+
+		if (!confirmed) {
+			return
+		}
+
+		try {
+			await deleteApplicationFiles(application.id)
+			await removeApplication(application.id)
+			navigate('/admin/applications', { replace: true })
+		} catch (deleteError) {
+			setReviewError(deleteError.message)
+		}
 	}
 
 	async function handleSaveReview() {
@@ -230,6 +250,9 @@ function ApplicationReview() {
 						</Button>
 						<Button variant="secondary" className="w-full sm:w-auto" onClick={handleDownload}>
 							Download PDF
+						</Button>
+						<Button variant="danger" className="w-full sm:w-auto" onClick={handleDelete}>
+							Delete application
 						</Button>
 					</div>
 				</div>

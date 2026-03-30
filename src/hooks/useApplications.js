@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+	deleteApplication,
 	getAllApplications,
 	getUserApplications,
 	updateApplicationFormData,
@@ -53,6 +54,13 @@ export function useApplications() {
 		return updated
 	}
 
+	async function removeApplication(applicationId) {
+		await deleteApplication(applicationId)
+		setApplications((currentApplications) =>
+			currentApplications.filter((application) => application.id !== applicationId),
+		)
+	}
+
 	useEffect(() => {
 		refreshApplications()
 	}, [refreshApplications])
@@ -64,5 +72,6 @@ export function useApplications() {
 		refreshApplications,
 		changeStatus,
 		saveFormData,
+		removeApplication,
 	}
 }

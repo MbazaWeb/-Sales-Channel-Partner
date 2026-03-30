@@ -5,7 +5,7 @@ import Card from '../../components/ui/Card.jsx'
 import { useApplications } from '../../hooks/useApplications.js'
 import { APPLICATION_STATUS } from '../../utils/constants.js'
 import { downloadApplicationPdf } from '../../utils/pdfGenerator.js'
-import { getApplicationFilesWithUrls } from '../../services/fileService.js'
+import { deleteApplicationFiles, getApplicationFilesWithUrls } from '../../services/fileService.js'
 
 function formatTimestamp(value) {
 	if (!value) {
@@ -33,10 +33,11 @@ function StatusBadge({ status }) {
 
 function Applications() {
 	const navigate = useNavigate()
-	const { applications, loading, error } = useApplications()
+	const { applications, loading, error, removeApplication } = useApplications()
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedRegion, setSelectedRegion] = useState('')
 	const [selectedDate, setSelectedDate] = useState('')
+	const [actionError, setActionError] = useState('')
 
 	const regions = useMemo(
 		() => Array.from(new Set(applications.map((application) => application.regionName).filter(Boolean))).sort(),
@@ -67,6 +68,23 @@ function Applications() {
 	async function handleDownload(application) {
 		const documents = await getApplicationFilesWithUrls(application.id)
 		await downloadApplicationPdf(application, documents)
+	}
+
+	async function handleDelete(application) {
+		const confirmed = window.confirm(`Delete application for ${application.formData.tradingAs || application.applicant_email}?`)
+
+		if (!confirmed) {
+			return
+		}
+
+		setActionError('')
+
+		try {
+			await deleteApplicationFiles(application.id)
+			await removeApplication(application.id)
+		} catch (error) {
+			setActionError(error.message)
+		}
 	}
 
 	return (
@@ -106,6 +124,7 @@ function Applications() {
 
 			{loading ? <Card>Loading applications...</Card> : null}
 			{error ? <Card className="text-rose-700">{error}</Card> : null}
+			{actionError ? <Card className="text-rose-700">{actionError}</Card> : null}
 
 			{!loading && !error ? (
 				<>
@@ -131,6 +150,9 @@ function Applications() {
 									</Button>
 									<Button className="w-full sm:w-auto" variant="secondary" onClick={() => handleDownload(application)}>
 										Download
+									</Button>
+									<Button className="w-full sm:w-auto" variant="danger" onClick={() => handleDelete(application)}>
+										Delete
 									</Button>
 								</div>
 							</Card>
@@ -169,6 +191,9 @@ function Applications() {
 													</Button>
 													<Button variant="secondary" onClick={() => handleDownload(application)}>
 														Download
+													</Button>
+													<Button variant="danger" onClick={() => handleDelete(application)}>
+														Delete
 													</Button>
 												</div>
 											</td>

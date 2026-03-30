@@ -29,6 +29,16 @@ create table if not exists public.application_documents (
 	created_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.profiles (
+	id uuid primary key references auth.users(id) on delete cascade,
+	email text not null unique,
+	full_name text,
+	region text,
+	role text not null default 'USER',
+	created_at timestamptz not null default timezone('utc', now()),
+	updated_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.location_zones (
 	id uuid primary key default gen_random_uuid(),
 	name text not null unique,
@@ -319,8 +329,14 @@ end;
 $$;
 
 drop trigger if exists trg_applications_updated_at on public.applications;
+drop trigger if exists trg_profiles_updated_at on public.profiles;
 
 create trigger trg_applications_updated_at
 before update on public.applications
+for each row
+execute procedure public.set_updated_at();
+
+create trigger trg_profiles_updated_at
+before update on public.profiles
 for each row
 execute procedure public.set_updated_at();

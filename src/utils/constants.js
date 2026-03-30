@@ -10,6 +10,37 @@ export const APPLICATION_STATUS = Object.freeze({
 	REJECTED: 'REJECTED',
 })
 
+export const USER_PROFILE_REGIONS = [
+	'Arusha',
+	'Dar es Salaam',
+	'Dodoma',
+	'Geita',
+	'Iringa',
+	'Kagera',
+	'Katavi',
+	'Kigoma',
+	'Kilimanjaro',
+	'Lindi',
+	'Manyara',
+	'Mara',
+	'Mbeya',
+	'Morogoro',
+	'Mtwara',
+	'Mwanza',
+	'Njombe',
+	'Pemba',
+	'Pwani',
+	'Rukwa',
+	'Ruvuma',
+	'Shinyanga',
+	'Simiyu',
+	'Singida',
+	'Songwe',
+	'Tabora',
+	'Tanga',
+	'Unguja',
+]
+
 export const REQUIRED_DOCUMENTS = [
 	{
 		key: 'outletPhoto',

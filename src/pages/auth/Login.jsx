@@ -56,7 +56,7 @@ function Login() {
 					<p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-700">Sign in</p>
 					<h2 className="mt-4 text-3xl font-semibold text-slate-900">Access the SCP portal</h2>
 					<p className="mt-3 text-sm text-slate-600">
-						Use your approved MultiChoice onboarding credentials. The provisioned admin account signs in here; it is not created through public signup.
+						Sign in to continue with partner onboarding, reviews, and approved application downloads.
 					</p>
 					{!isConfigured || authError ? (
 						<div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

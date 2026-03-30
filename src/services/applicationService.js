@@ -135,3 +135,12 @@ export async function updateApplicationFormData(applicationId, formData) {
 
 	return normalizeApplication(data)
 }
+
+export async function deleteApplication(applicationId) {
+	const client = requireSupabase()
+	const { error } = await client.from('applications').delete().eq('id', applicationId)
+
+	if (error) {
+		throw error
+	}
+}

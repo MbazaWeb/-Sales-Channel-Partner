@@ -39,3 +39,54 @@ a {
 #root {
   min-height: 100vh;
 }
+
+html.theme-dark body {
+  background: #020617;
+  color: #e2e8f0;
+}
+
+html.theme-dark .bg-white,
+html.theme-dark .bg-white\/95 {
+  background-color: #0f172a !important;
+}
+
+html.theme-dark .bg-slate-50 {
+  background-color: #111827 !important;
+}
+
+html.theme-dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.theme-dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.theme-dark .text-slate-800,
+html.theme-dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html.theme-dark .text-slate-600,
+html.theme-dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.theme-dark .border-slate-100,
+html.theme-dark .border-slate-200,
+html.theme-dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+html.theme-dark input,
+html.theme-dark select,
+html.theme-dark textarea {
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+html.theme-dark .shadow-lg,
+html.theme-dark .shadow-2xl {
+  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.55) !important;
+}

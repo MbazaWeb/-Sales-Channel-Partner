@@ -6,7 +6,7 @@ const HEADER_LOGO_SRC = '/Header.png'
 
 function Navbar() {
 	const navigate = useNavigate()
-	const { user, role, logout } = useAuth()
+	const { user, profile, role, logout } = useAuth()
 
 	async function handleLogout() {
 		await logout()
@@ -28,7 +28,8 @@ function Navbar() {
 				<div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
 					<div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-left sm:px-4 sm:text-right">
 						<p className="text-xs uppercase tracking-[0.25em] text-slate-500">{role}</p>
-						<p className="max-w-40 truncate text-sm font-medium text-slate-800 sm:max-w-56">{user?.email}</p>
+						<p className="max-w-40 truncate text-sm font-medium text-slate-800 sm:max-w-56">{profile?.fullName || user?.email}</p>
+						<p className="max-w-40 truncate text-xs text-slate-500 sm:max-w-56">{user?.email}</p>
 					</div>
 					<Button variant="secondary" onClick={handleLogout}>
 						Sign out
