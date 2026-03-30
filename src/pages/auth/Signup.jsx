@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
+import { USER_PROFILE_REGIONS } from '../../utils/constants.js'
 
 function Signup() {
 	const navigate = useNavigate()
@@ -77,13 +78,19 @@ function Signup() {
 					</label>
 					<label className="block">
 						<span className="mb-2 block text-sm font-medium text-slate-700">Region</span>
-						<input
+						<select
 							value={form.region}
 							onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))}
 							className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500"
-							placeholder="Enter your region"
 							required
-						/>
+						>
+							<option value="">Select region</option>
+							{USER_PROFILE_REGIONS.map((region) => (
+								<option key={region} value={region}>
+									{region}
+								</option>
+							))}
+						</select>
 					</label>
 					<label className="block">
 						<span className="mb-2 block text-sm font-medium text-slate-700">Email</span>

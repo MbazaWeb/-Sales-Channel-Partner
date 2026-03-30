@@ -362,11 +362,22 @@ const MONTH_OPTIONS = [
 
 const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => String(index + 1))
 const YEAR_OPTIONS = Array.from({ length: 21 }, (_, index) => String(new Date().getFullYear() - 5 + index))
+const DRAFT_STEP_FIELD = 'draftStepIndex'
 const FORM_ONLY_FIELDS = {
 	signedYear: {
 		id: 'signedYear',
 		label: 'Signed year',
 	},
+}
+
+function clampStepIndex(stepIndex) {
+	const numericStepIndex = Number.parseInt(stepIndex, 10)
+
+	if (Number.isNaN(numericStepIndex)) {
+		return 0
+	}
+
+	return Math.max(0, Math.min(FORM_BOOK_STEPS.length - 1, numericStepIndex))
 }
 
 const FORM_BOOK_STEPS = [
@@ -841,6 +852,7 @@ function ApplicationForm() {
 
 		hydratedDraftRef.current = resumeApplication.id
 		setCurrentDraftId(resumeApplication.id)
+		setActiveStepIndex(clampStepIndex(resumeApplication.formData?.[DRAFT_STEP_FIELD]))
 		setFormData({
 			...createInitialFormData(),
 			...resumeApplication.formData,
@@ -937,7 +949,7 @@ function ApplicationForm() {
 		setSubmissionMessage('')
 	}
 
-	async function saveIncompleteApplication({ silent = false } = {}) {
+	async function saveIncompleteApplication({ silent = false, stepIndex = activeStepIndex } = {}) {
 		if (!user || !hasDraftContent()) {
 			return null
 		}
@@ -951,6 +963,7 @@ function ApplicationForm() {
 				applicantEmail: user.email,
 				formData: {
 					...formData,
+					[DRAFT_STEP_FIELD]: clampStepIndex(stepIndex),
 					status: APPLICATION_STATUS.INCOMPLETE,
 				},
 				status: APPLICATION_STATUS.INCOMPLETE,
@@ -970,18 +983,19 @@ function ApplicationForm() {
 	}
 
 	function jumpToStep(nextIndex) {
-		setActiveStepIndex(Math.max(0, Math.min(FORM_BOOK_STEPS.length - 1, nextIndex)))
+		setActiveStepIndex(clampStepIndex(nextIndex))
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
 
 	async function persistAndJumpToStep(nextIndex) {
-		const saved = await saveIncompleteApplication({ silent: true })
+		const targetStepIndex = clampStepIndex(nextIndex)
+		const saved = await saveIncompleteApplication({ silent: true, stepIndex: targetStepIndex })
 
 		if (hasDraftContent() && !saved && !currentDraftId) {
 			return
 		}
 
-		jumpToStep(nextIndex)
+		jumpToStep(targetStepIndex)
 	}
 
 	async function handlePreview(event) {

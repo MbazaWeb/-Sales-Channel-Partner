@@ -9,6 +9,7 @@ alter table public.profiles enable row level security;
 
 drop policy if exists "Users can create their own applications" on public.applications;
 drop policy if exists "Users can read their own applications" on public.applications;
+drop policy if exists "Users can update their own applications" on public.applications;
 drop policy if exists "Admin can update applications" on public.applications;
 drop policy if exists "Users can create document metadata for own applications" on public.application_documents;
 drop policy if exists "Users can read document metadata for own applications" on public.application_documents;
@@ -38,6 +39,13 @@ using (
 	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
 	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
 );
+
+create policy "Users can update their own applications"
+on public.applications
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 create policy "Admin can update applications"
 on public.applications
