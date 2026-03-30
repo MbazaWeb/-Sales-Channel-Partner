@@ -68,6 +68,15 @@ alter table public.applications add column if not exists zone_name text;
 alter table public.applications add column if not exists region_name text;
 alter table public.applications add column if not exists district_name text;
 
+update public.profiles
+set role = 'ADMIN'
+where id in (
+	'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+	'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+	'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+)
+	or lower(email) in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com');
+
 alter table public.applications drop constraint if exists applications_status_check;
 alter table public.applications
 	add constraint applications_status_check
