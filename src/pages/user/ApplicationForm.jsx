@@ -916,7 +916,7 @@ function ApplicationForm() {
 								className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
 								disabled={loadingLocations || !formData.zoneId}
 							>
-								<option value="">Select region</option>
+								<option value="">{formData.zoneId ? 'Select region' : 'Select zone first'}</option>
 								{regions.map((region) => (
 									<option key={region.id} value={region.id}>
 										{region.name}
@@ -933,7 +933,7 @@ function ApplicationForm() {
 								className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
 								disabled={loadingLocations || !formData.regionId}
 							>
-								<option value="">Select district</option>
+								<option value="">{formData.regionId ? 'Select district' : 'Select region first'}</option>
 								{districts.map((district) => (
 									<option key={district.id} value={district.id}>
 										{district.name}
