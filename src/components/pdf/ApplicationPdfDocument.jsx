@@ -173,6 +173,35 @@ const styles = StyleSheet.create({
 	bulletItem: {
 		fontSize: 9,
 	},
+	statusBanner: {
+		marginBottom: 12,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: '#bbf7d0',
+		backgroundColor: '#f0fdf4',
+	},
+	statusBannerRejected: {
+		borderColor: '#fecdd3',
+		backgroundColor: '#fff1f2',
+	},
+	statusBannerTitle: {
+		fontSize: 10,
+		fontFamily: 'Helvetica-Bold',
+		color: '#166534',
+		marginBottom: 2,
+	},
+	statusBannerTitleRejected: {
+		color: '#be123c',
+	},
+	statusBannerText: {
+		fontSize: 8.5,
+		color: '#166534',
+	},
+	statusBannerTextRejected: {
+		color: '#9f1239',
+	},
 })
 
 function valueOrFallback(value) {
@@ -248,6 +277,30 @@ function getAdminConflictAssessment(formData) {
 	return ''
 }
 
+function getStatusSummary(application, formData) {
+	if (application.status === 'APPROVED') {
+		return {
+			title: 'Admin approval recorded',
+			text: `Approved on ${valueOrFallback(formData.processedOn)} by ${valueOrFallback(formData.salesRepresentativeName)}.`,
+			rejected: false,
+		}
+	}
+
+	if (application.status === 'REJECTED') {
+		return {
+			title: 'Admin decision recorded',
+			text: `Declined on ${valueOrFallback(formData.processedOn)} by ${valueOrFallback(formData.salesRepresentativeName)}.`,
+			rejected: true,
+		}
+	}
+
+	return {
+		title: 'Awaiting admin decision',
+		text: 'This application has been submitted and is pending internal review.',
+		rejected: false,
+	}
+}
+
 function selectedItems(formData, options) {
 	return options.filter((option) => Boolean(formData[option.id])).map((option) => option.label)
 }
@@ -316,6 +369,7 @@ function SignatureSection({ formData }) {
 
 function ApplicationPdfDocument({ application }) {
 	const formData = application.formData ?? {}
+	const statusSummary = getStatusSummary(application, formData)
 	const salesChannels = selectedItems(formData, [
 		{ id: 'salesChannelAgency', label: 'Agency' },
 		{ id: 'salesChannelRetailer', label: 'Retailer' },
@@ -344,6 +398,15 @@ function ApplicationPdfDocument({ application }) {
 					<Image src={HEADER_IMAGE_SRC} style={styles.headerImage} />
 					<Text style={styles.title}>Annexure A: MultiChoice SCP Application Form</Text>
 					<Text style={styles.subtitle}>(RoA-GRP-SAL-TMP-001)</Text>
+				</View>
+
+				<View style={[styles.statusBanner, statusSummary.rejected ? styles.statusBannerRejected : null]}>
+					<Text style={[styles.statusBannerTitle, statusSummary.rejected ? styles.statusBannerTitleRejected : null]}>
+						{statusSummary.title}
+					</Text>
+					<Text style={[styles.statusBannerText, statusSummary.rejected ? styles.statusBannerTextRejected : null]}>
+						{statusSummary.text}
+					</Text>
 				</View>
 
 				<View style={styles.intro}>
@@ -450,8 +513,8 @@ function ApplicationPdfDocument({ application }) {
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Application status</Text>
 					<View style={styles.grid}>
+						<Field label="Approval outcome" value={application.status} />
 						<Field label="Applicant email" value={application.applicant_email} />
-						<Field label="Current status" value={application.status} />
 						<Field label="Submitted on" value={application.created_at ? new Date(application.created_at).toLocaleDateString() : ''} />
 						<Field label="Processed on" value={formData.processedOn} />
 						<Field label="Sales representative name" value={formData.salesRepresentativeName} fullWidth />

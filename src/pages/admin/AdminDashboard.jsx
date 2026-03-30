@@ -59,6 +59,9 @@ function AdminDashboard() {
 						<div key={application.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
 							<p className="truncate text-sm font-semibold text-slate-900">{application.formData.tradingAs || 'Unnamed business'}</p>
 							<p className="mt-1 truncate text-sm text-slate-600">{application.applicant_email}</p>
+							<p className="mt-2 text-sm text-slate-600">
+								{[application.zoneName, application.regionName].filter(Boolean).join(' / ') || 'Location not provided'}
+							</p>
 							<div className="mt-3 flex items-center justify-between gap-3 text-sm text-slate-600">
 								<span>{application.status}</span>
 								<span>{new Date(application.created_at).toLocaleDateString()}</span>
@@ -75,6 +78,8 @@ function AdminDashboard() {
 							<tr className="border-b border-slate-200 text-slate-500">
 								<th className="pb-3 pr-4 font-medium">Applicant</th>
 								<th className="pb-3 pr-4 font-medium">Business</th>
+								<th className="pb-3 pr-4 font-medium">Zone</th>
+								<th className="pb-3 pr-4 font-medium">Region</th>
 								<th className="pb-3 pr-4 font-medium">Status</th>
 								<th className="pb-3 font-medium">Submitted</th>
 							</tr>
@@ -84,6 +89,8 @@ function AdminDashboard() {
 								<tr key={application.id} className="border-b border-slate-100">
 									<td className="py-4 pr-4 text-slate-700">{application.applicant_email}</td>
 									<td className="py-4 pr-4 font-medium text-slate-900">{application.formData.tradingAs}</td>
+									<td className="py-4 pr-4 text-slate-700">{application.zoneName || 'Not provided'}</td>
+									<td className="py-4 pr-4 text-slate-700">{application.regionName || 'Not provided'}</td>
 									<td className="py-4 pr-4">{application.status}</td>
 									<td className="py-4">{new Date(application.created_at).toLocaleDateString()}</td>
 								</tr>
