@@ -12,6 +12,7 @@ import Login from './pages/auth/Login.jsx'
 import Signup from './pages/auth/Signup.jsx'
 import ApplicationForm from './pages/user/ApplicationForm.jsx'
 import Dashboard from './pages/user/Dashboard.jsx'
+import MyApplications from './pages/user/MyApplications.jsx'
 
 const router = createBrowserRouter([
 	{
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
 					{
 						path: 'dashboard',
 						element: <Dashboard />,
+					},
+					{
+						path: 'my-applications',
+						element: <MyApplications />,
 					},
 					{
 						path: 'apply',

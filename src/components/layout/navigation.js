@@ -3,6 +3,7 @@ import { ROLES } from '../../config/roles.js'
 export const navigationByRole = {
 	[ROLES.USER]: [
 		{ label: 'Dashboard', shortLabel: 'Home', to: '/dashboard' },
+		{ label: 'My Applications', shortLabel: 'My Apps', to: '/my-applications' },
 		{ label: 'Apply', shortLabel: 'Apply', to: '/apply' },
 	],
 	[ROLES.ADMIN]: [

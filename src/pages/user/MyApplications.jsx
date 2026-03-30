@@ -1,11 +1,10 @@
-import { useNavigate } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import { useApplications } from '../../hooks/useApplications.js'
+import { getApplicationFilesWithUrls } from '../../services/fileService.js'
 import { APPLICATION_STATUS } from '../../utils/constants.js'
 import { downloadApplicationPdf } from '../../utils/pdfGenerator.js'
-import { getApplicationFilesWithUrls } from '../../services/fileService.js'
 
 function formatTimestamp(value) {
 	if (!value) {
@@ -31,8 +30,7 @@ function StatusBadge({ status }) {
 	return <span className={`rounded-full px-3 py-1 text-xs font-semibold tracking-[0.2em] ${statusClassName}`}>{status}</span>
 }
 
-function Applications() {
-	const navigate = useNavigate()
+function MyApplications() {
 	const { applications, loading, error } = useApplications()
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedRegion, setSelectedRegion] = useState('')
@@ -72,17 +70,17 @@ function Applications() {
 	return (
 		<div className="space-y-6">
 			<Card className="p-5 sm:p-6">
-				<p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-700">Applications</p>
-				<h2 className="mt-3 text-2xl font-semibold text-slate-900 sm:text-3xl">Review and adjudicate submissions</h2>
+				<p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-700">My applications</p>
+				<h2 className="mt-3 text-2xl font-semibold text-slate-900 sm:text-3xl">Track every submission</h2>
 				<p className="mt-3 text-sm text-slate-600">
-					Search submissions, filter by submitted date or region, and open any record to complete the internal review page.
+					Filter by date or region, search by applicant or business name, and download the approved application pack when it is ready.
 				</p>
 				<div className="mt-5 grid gap-3 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
 					<input
 						type="search"
 						value={searchTerm}
 						onChange={(event) => setSearchTerm(event.target.value)}
-						placeholder="Search application, business, applicant..."
+						placeholder="Search application, business, status..."
 						className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-700"
 					/>
 					<select
@@ -119,20 +117,17 @@ function Applications() {
 									</div>
 									<StatusBadge status={application.status} />
 								</div>
-								<div className="grid gap-3 text-sm text-slate-700">
+								<div className="grid gap-2 text-sm text-slate-700">
 									<p><span className="font-semibold text-slate-900">Zone:</span> {application.zoneName || 'Not provided'}</p>
 									<p><span className="font-semibold text-slate-900">Region:</span> {application.regionName || 'Not provided'}</p>
 									<p><span className="font-semibold text-slate-900">Submitted:</span> {formatTimestamp(application.created_at)}</p>
 									<p><span className="font-semibold text-slate-900">Approved:</span> {application.status === APPLICATION_STATUS.APPROVED ? formatTimestamp(application.updated_at) : 'Not approved yet'}</p>
 								</div>
-								<div className="flex flex-col gap-3 sm:flex-row">
-									<Button className="w-full sm:w-auto" onClick={() => navigate(`/admin/applications/${application.id}`)}>
-										Open review
+								{application.status === APPLICATION_STATUS.APPROVED ? (
+									<Button className="w-full sm:w-auto" onClick={() => handleDownload(application)}>
+										Download approved PDF
 									</Button>
-									<Button className="w-full sm:w-auto" variant="secondary" onClick={() => handleDownload(application)}>
-										Download
-									</Button>
-								</div>
+								) : null}
 							</Card>
 						))}
 					</div>
@@ -149,28 +144,25 @@ function Applications() {
 										<th className="px-6 py-4 font-medium">Status</th>
 										<th className="px-6 py-4 font-medium">Submitted</th>
 										<th className="px-6 py-4 font-medium">Approved</th>
-										<th className="px-6 py-4 font-medium">Actions</th>
+										<th className="px-6 py-4 font-medium">Document</th>
 									</tr>
 								</thead>
 								<tbody>
 									{filteredApplications.map((application) => (
 										<tr key={application.id} className="border-t border-slate-100 align-top">
 											<td className="px-6 py-5 text-slate-700">{application.applicant_email}</td>
-											<td className="px-6 py-5 font-medium text-slate-900">{application.formData.tradingAs}</td>
+											<td className="px-6 py-5 font-medium text-slate-900">{application.formData.tradingAs || 'Unnamed business'}</td>
 											<td className="px-6 py-5 text-slate-700">{application.zoneName || 'Not provided'}</td>
 											<td className="px-6 py-5 text-slate-700">{application.regionName || 'Not provided'}</td>
-											<td className="px-6 py-5 text-slate-700"><StatusBadge status={application.status} /></td>
+											<td className="px-6 py-5"><StatusBadge status={application.status} /></td>
 											<td className="px-6 py-5 text-slate-700">{formatTimestamp(application.created_at)}</td>
 											<td className="px-6 py-5 text-slate-700">{application.status === APPLICATION_STATUS.APPROVED ? formatTimestamp(application.updated_at) : 'Not approved yet'}</td>
 											<td className="px-6 py-5">
-												<div className="flex flex-wrap gap-2">
-													<Button variant="secondary" onClick={() => navigate(`/admin/applications/${application.id}`)}>
-														Open review
-													</Button>
-													<Button variant="secondary" onClick={() => handleDownload(application)}>
-														Download
-													</Button>
-												</div>
+												{application.status === APPLICATION_STATUS.APPROVED ? (
+													<Button onClick={() => handleDownload(application)}>Download approved PDF</Button>
+												) : (
+													<span className="text-sm text-slate-500">Available after approval</span>
+												)}
 											</td>
 										</tr>
 									))}
@@ -184,4 +176,4 @@ function Applications() {
 	)
 }
 
-export default Applications
+export default MyApplications

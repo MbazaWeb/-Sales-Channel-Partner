@@ -4,6 +4,8 @@ import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
 
+const HEADER_LOGO_SRC = '/Header.png'
+
 function Login() {
 	const navigate = useNavigate()
 	const location = useLocation()
@@ -40,6 +42,7 @@ function Login() {
 		<div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10 lg:px-8">
 			<div className="grid w-full gap-8 lg:grid-cols-[1.15fr_0.85fr]">
 				<div className="hidden rounded-[36px] bg-[linear-gradient(135deg,rgba(30,64,175,0.95),rgba(15,23,42,0.95))] p-10 text-white shadow-2xl shadow-blue-950/30 lg:block">
+					<img src={HEADER_LOGO_SRC} alt="MultiChoice Africa" className="h-24 w-auto rounded-2xl bg-white/95 px-5 py-3 shadow-lg shadow-slate-950/20" />
 					<p className="text-sm font-semibold uppercase tracking-[0.35em] text-blue-200">MultiChoice Africa</p>
 					<h2 className="mt-8 max-w-xl text-5xl font-semibold leading-tight">
 						Partner onboarding with PDF-accurate capture, review, and approval.
@@ -49,6 +52,7 @@ function Login() {
 					</p>
 				</div>
 				<Card className="mx-auto w-full max-w-xl p-8 lg:p-10">
+					<img src={HEADER_LOGO_SRC} alt="MultiChoice Africa" className="h-20 w-auto rounded-2xl bg-slate-50 px-4 py-2 shadow-sm" />
 					<p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-700">Sign in</p>
 					<h2 className="mt-4 text-3xl font-semibold text-slate-900">Access the SCP portal</h2>
 					<p className="mt-3 text-sm text-slate-600">
