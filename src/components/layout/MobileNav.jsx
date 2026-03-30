@@ -11,7 +11,7 @@ function MobileNav() {
 	}
 
 	return (
-		<nav className="fixed inset-x-3 bottom-3 z-40 rounded-[28px] border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-950/15 backdrop-blur lg:hidden">
+		<nav className="fixed inset-x-3 bottom-3 z-40 rounded-[24px] border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-950/15 backdrop-blur lg:hidden">
 			<div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
 				{items.map((item) => (
 					<NavLink
@@ -19,7 +19,7 @@ function MobileNav() {
 						to={item.to}
 						className={({ isActive }) =>
 							[
-								'flex min-h-14 items-center justify-center rounded-2xl px-3 text-center text-xs font-semibold transition',
+								'flex min-h-14 items-center justify-center rounded-2xl px-2 text-center text-[11px] font-semibold leading-tight transition',
 								isActive
 									? 'bg-blue-700 text-white shadow-lg shadow-blue-700/25'
 									: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',

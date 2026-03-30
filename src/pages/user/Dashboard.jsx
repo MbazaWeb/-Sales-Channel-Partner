@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
+import Skeleton from '../../components/ui/Skeleton.jsx'
 import { useApplications } from '../../hooks/useApplications.js'
 import { getApplicationFilesWithUrls } from '../../services/fileService.js'
 import { APPLICATION_STATUS, PREVIEW_FIELDS } from '../../utils/constants.js'
@@ -22,6 +23,39 @@ function StatusBadge({ status }) {
 	)
 }
 
+function MetricCard({ label, value }) {
+	return (
+		<Card className="p-5 sm:p-6">
+			<p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{label}</p>
+			<p className="mt-3 text-2xl font-semibold text-slate-900 sm:text-3xl">{value}</p>
+		</Card>
+	)
+}
+
+function DashboardSkeleton() {
+	return (
+		<div className="space-y-6">
+			<Card className="p-5 sm:p-6">
+				<Skeleton className="h-4 w-28" />
+				<Skeleton className="mt-4 h-8 w-72 max-w-full" />
+				<Skeleton className="mt-3 h-4 w-full max-w-2xl" />
+			</Card>
+			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+				{Array.from({ length: 5 }).map((_, index) => (
+					<Card key={index} className="p-5 sm:p-6">
+						<Skeleton className="h-4 w-20" />
+						<Skeleton className="mt-4 h-10 w-16" />
+					</Card>
+				))}
+			</div>
+			<div className="grid gap-6 xl:grid-cols-[0.72fr_1fr]">
+				<Card className="p-5 sm:p-6"><Skeleton className="h-80 w-full" /></Card>
+				<Card className="p-5 sm:p-6"><Skeleton className="h-80 w-full" /></Card>
+			</div>
+		</div>
+	)
+}
+
 function Dashboard() {
 	const { applications, loading, error } = useApplications()
 	const latestApplication = applications[0]
@@ -37,6 +71,10 @@ function Dashboard() {
 		await downloadApplicationPdf(application, documents)
 	}
 
+	if (loading) {
+		return <DashboardSkeleton />
+	}
+
 	return (
 		<div className="space-y-6">
 			<Card className="p-5 sm:p-6">
@@ -47,7 +85,6 @@ function Dashboard() {
 				</p>
 			</Card>
 
-			{loading ? <Card>Loading applications...</Card> : null}
 			{error ? <Card className="text-rose-700">{error}</Card> : null}
 			{!loading && !error && !latestApplication ? (
 				<Card>
@@ -64,12 +101,12 @@ function Dashboard() {
 
 			{latestApplication ? (
 				<div className="space-y-6">
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Total</p><p className="mt-3 text-3xl font-semibold text-slate-900">{total}</p></Card>
-						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Incomplete</p><p className="mt-3 text-3xl font-semibold text-slate-900">{incomplete}</p></Card>
-						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Pending</p><p className="mt-3 text-3xl font-semibold text-slate-900">{pending}</p></Card>
-						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Approved</p><p className="mt-3 text-3xl font-semibold text-slate-900">{approved}</p></Card>
-						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Rejected</p><p className="mt-3 text-3xl font-semibold text-slate-900">{rejected}</p></Card>
+					<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+						<MetricCard label="Total" value={total} />
+						<MetricCard label="Incomplete" value={incomplete} />
+						<MetricCard label="Pending" value={pending} />
+						<MetricCard label="Approved" value={approved} />
+						<MetricCard label="Rejected" value={rejected} />
 					</div>
 					<div className="grid gap-6 xl:grid-cols-[0.72fr_1fr]">
 					<Card className="p-5 sm:p-6">

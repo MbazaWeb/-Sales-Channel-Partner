@@ -25,9 +25,9 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <Navbar />
-      <div className="mx-auto flex max-w-420 gap-4 px-3 pb-24 pt-4 sm:px-4 sm:pt-6 lg:gap-6 lg:px-6 lg:pb-8">
+      <div className="mx-auto flex w-full max-w-[1680px] gap-4 px-3 pb-24 pt-4 sm:px-4 sm:pt-6 lg:gap-6 lg:px-6 lg:pb-8 xl:px-8">
         <Sidebar />
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

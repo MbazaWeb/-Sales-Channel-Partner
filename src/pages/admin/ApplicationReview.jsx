@@ -66,6 +66,73 @@ function AdminChoiceGroup({ label, options, selectedValue, error, onSelect }) {
 	)
 }
 
+function SaveIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M5 3h11l3 3v15H5z" />
+			<path d="M9 3v6h6" />
+			<path d="M9 21v-6h6v6" />
+		</svg>
+	)
+}
+
+function DownloadIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M12 3v12" />
+			<path d="m7 10 5 5 5-5" />
+			<path d="M5 21h14" />
+		</svg>
+	)
+}
+
+function DeleteIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M3 6h18" />
+			<path d="M8 6V4h8v2" />
+			<path d="M19 6l-1 14H6L5 6" />
+			<path d="M10 11v6" />
+			<path d="M14 11v6" />
+		</svg>
+	)
+}
+
+function DeclineIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<circle cx="12" cy="12" r="9" />
+			<path d="m9 9 6 6" />
+			<path d="m15 9-6 6" />
+		</svg>
+	)
+}
+
+function ApproveIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<circle cx="12" cy="12" r="9" />
+			<path d="m8.5 12 2.5 2.5 4.5-5" />
+		</svg>
+	)
+}
+
+function ActionIconButton({ label, title, variant = 'secondary', onClick, icon: Icon, disabled = false }) {
+	return (
+		<Button
+			variant={variant}
+			onClick={onClick}
+			title={title}
+			aria-label={label}
+			disabled={disabled}
+			className="h-11 w-11 rounded-2xl p-0"
+		>
+			<Icon className="h-4 w-4" />
+			<span className="sr-only">{label}</span>
+		</Button>
+	)
+}
+
 function ApplicationReview() {
 	const navigate = useNavigate()
 	const { applicationId } = useParams()
@@ -210,6 +277,15 @@ function ApplicationReview() {
 		return options.find((option) => Boolean(reviewFormData[option.id]))?.id ?? ''
 	}
 
+	const actionStatusMessage =
+		reviewAction === 'save'
+			? 'Saving review...'
+			: reviewAction === APPLICATION_STATUS.REJECTED
+				? 'Declining application...'
+				: reviewAction === APPLICATION_STATUS.APPROVED
+					? 'Approving application...'
+					: ''
+
 	if (loading) {
 		return <Card>Loading application review...</Card>
 	}
@@ -277,31 +353,45 @@ function ApplicationReview() {
 						</div>
 						{reviewError ? <p className="text-sm text-rose-700">{reviewError}</p> : null}
 						{reviewMessage ? <p className="text-sm text-emerald-700">{reviewMessage}</p> : null}
-						<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-							<Button variant="secondary" className="w-full sm:w-auto" onClick={handleSaveReview} disabled={reviewAction !== ''}>
-								{reviewAction === 'save' ? 'Saving...' : 'Save review'}
-							</Button>
-							<Button variant="secondary" className="w-full sm:w-auto" onClick={handleDownload} disabled={reviewAction !== ''}>
-								{application.status === APPLICATION_STATUS.APPROVED ? 'Download approved PDF' : 'Download current PDF'}
-							</Button>
-							<Button variant="danger" className="w-full sm:w-auto" onClick={handleDelete} disabled={reviewAction !== ''}>
-								Delete application
-							</Button>
-							<Button
+						{actionStatusMessage ? <p className="text-sm text-slate-500">{actionStatusMessage}</p> : null}
+						<div className="flex flex-wrap gap-3">
+							<ActionIconButton
+								label="Save review"
+								title="Save review"
+								onClick={handleSaveReview}
+								icon={SaveIcon}
+								disabled={reviewAction !== ''}
+							/>
+							<ActionIconButton
+								label={application.status === APPLICATION_STATUS.APPROVED ? 'Download approved PDF' : 'Download current PDF'}
+								title={application.status === APPLICATION_STATUS.APPROVED ? 'Download approved PDF' : 'Download current PDF'}
+								onClick={handleDownload}
+								icon={DownloadIcon}
+								disabled={reviewAction !== ''}
+							/>
+							<ActionIconButton
+								label="Delete application"
+								title="Delete application"
 								variant="danger"
-								className="w-full sm:w-auto"
+								onClick={handleDelete}
+								icon={DeleteIcon}
+								disabled={reviewAction !== ''}
+							/>
+							<ActionIconButton
+								label="Decline application"
+								title="Decline application"
+								variant="danger"
 								onClick={() => handleReviewDecision(APPLICATION_STATUS.REJECTED)}
+								icon={DeclineIcon}
 								disabled={reviewAction !== ''}
-							>
-								{reviewAction === APPLICATION_STATUS.REJECTED ? 'Declining...' : 'Decline'}
-							</Button>
-							<Button
-								className="w-full sm:w-auto"
+							/>
+							<ActionIconButton
+								label="Approve application"
+								title="Approve application"
 								onClick={() => handleReviewDecision(APPLICATION_STATUS.APPROVED)}
+								icon={ApproveIcon}
 								disabled={reviewAction !== ''}
-							>
-								{reviewAction === APPLICATION_STATUS.APPROVED ? 'Approving...' : 'Approve'}
-							</Button>
+							/>
 						</div>
 						<div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
 							Admins can still download the full application PDF after approval.

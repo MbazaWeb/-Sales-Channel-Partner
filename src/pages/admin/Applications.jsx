@@ -31,6 +31,52 @@ function StatusBadge({ status }) {
 	return <span className={`rounded-full px-3 py-1 text-xs font-semibold tracking-[0.2em] ${statusClassName}`}>{status}</span>
 }
 
+function ReviewIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+			<circle cx="12" cy="12" r="3" />
+		</svg>
+	)
+}
+
+function DownloadIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M12 3v12" />
+			<path d="m7 10 5 5 5-5" />
+			<path d="M5 21h14" />
+		</svg>
+	)
+}
+
+function DeleteIcon(props) {
+	return (
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+			<path d="M3 6h18" />
+			<path d="M8 6V4h8v2" />
+			<path d="M19 6l-1 14H6L5 6" />
+			<path d="M10 11v6" />
+			<path d="M14 11v6" />
+		</svg>
+	)
+}
+
+function ActionIconButton({ label, title, variant = 'secondary', onClick, icon: Icon }) {
+	return (
+		<Button
+			variant={variant}
+			onClick={onClick}
+			title={title}
+			aria-label={label}
+			className="h-11 w-11 rounded-2xl p-0"
+		>
+			<Icon className="h-4 w-4" />
+			<span className="sr-only">{label}</span>
+		</Button>
+	)
+}
+
 function Applications() {
 	const navigate = useNavigate()
 	const { applications, loading, error, removeApplication } = useApplications()
@@ -144,16 +190,26 @@ function Applications() {
 									<p><span className="font-semibold text-slate-900">Submitted:</span> {formatTimestamp(application.created_at)}</p>
 									<p><span className="font-semibold text-slate-900">Approved:</span> {application.status === APPLICATION_STATUS.APPROVED ? formatTimestamp(application.updated_at) : 'Not approved yet'}</p>
 								</div>
-								<div className="flex flex-col gap-3 sm:flex-row">
-									<Button className="w-full sm:w-auto" onClick={() => navigate(`/admin/applications/${application.id}`)}>
-										Open review
-									</Button>
-									<Button className="w-full sm:w-auto" variant="secondary" onClick={() => handleDownload(application)}>
-										Download
-									</Button>
-									<Button className="w-full sm:w-auto" variant="danger" onClick={() => handleDelete(application)}>
-										Delete
-									</Button>
+								<div className="flex flex-wrap gap-3">
+									<ActionIconButton
+										label="Open review"
+										title="Open review"
+										onClick={() => navigate(`/admin/applications/${application.id}`)}
+										icon={ReviewIcon}
+									/>
+									<ActionIconButton
+										label="Download application PDF"
+										title="Download"
+										onClick={() => handleDownload(application)}
+										icon={DownloadIcon}
+									/>
+									<ActionIconButton
+										label="Delete application"
+										title="Delete"
+										variant="danger"
+										onClick={() => handleDelete(application)}
+										icon={DeleteIcon}
+									/>
 								</div>
 							</Card>
 						))}
@@ -186,15 +242,25 @@ function Applications() {
 											<td className="px-6 py-5 text-slate-700">{application.status === APPLICATION_STATUS.APPROVED ? formatTimestamp(application.updated_at) : 'Not approved yet'}</td>
 											<td className="px-6 py-5">
 												<div className="flex flex-wrap gap-2">
-													<Button variant="secondary" onClick={() => navigate(`/admin/applications/${application.id}`)}>
-														Open review
-													</Button>
-													<Button variant="secondary" onClick={() => handleDownload(application)}>
-														Download
-													</Button>
-													<Button variant="danger" onClick={() => handleDelete(application)}>
-														Delete
-													</Button>
+													<ActionIconButton
+														label="Open review"
+														title="Open review"
+														onClick={() => navigate(`/admin/applications/${application.id}`)}
+														icon={ReviewIcon}
+													/>
+													<ActionIconButton
+														label="Download application PDF"
+														title="Download"
+														onClick={() => handleDownload(application)}
+														icon={DownloadIcon}
+													/>
+													<ActionIconButton
+														label="Delete application"
+														title="Delete"
+														variant="danger"
+														onClick={() => handleDelete(application)}
+														icon={DeleteIcon}
+													/>
 												</div>
 											</td>
 										</tr>

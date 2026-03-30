@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+  font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,6 +22,7 @@ body {
   margin: 0;
   min-width: 320px;
   background: #eff6ff;
+  overflow-x: hidden;
 }
 
 button,
@@ -49,6 +50,35 @@ a {
 
 #root {
   min-height: 100vh;
+}
+
+.ui-surface-enter {
+  animation: surface-enter 360ms ease-out;
+}
+
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, rgba(226,232,240,0.9) 0%, rgba(241,245,249,1) 50%, rgba(226,232,240,0.9) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.3s ease-in-out infinite;
+}
+
+@keyframes skeleton-wave {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes surface-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 html.theme-dark body {
@@ -107,6 +137,11 @@ html.theme-dark .shadow-2xl {
   box-shadow: 0 20px 50px rgba(2, 6, 23, 0.55) !important;
 }
 
+html.theme-dark .skeleton-block {
+  background: linear-gradient(90deg, rgba(30,41,59,0.95) 0%, rgba(51,65,85,1) 50%, rgba(30,41,59,0.95) 100%);
+  background-size: 200% 100%;
+}
+
 @media (max-width: 767px) {
   input,
   textarea,
@@ -117,5 +152,11 @@ html.theme-dark .shadow-2xl {
 
   select {
     min-height: 48px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: anywhere;
   }
 }
