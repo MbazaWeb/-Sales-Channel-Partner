@@ -1,0 +1,130 @@
+.pdf-page-shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #ffffff;
+  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.12);
+}
+
+.pdf-page-artboard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1190.64 / 1683.84;
+  background: #ffffff;
+}
+
+.pdf-page-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.pdf-overlay-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.pdf-overlay-field {
+  position: absolute;
+  z-index: 3;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+}
+
+.pdf-overlay-input,
+.pdf-overlay-textarea {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0 8px;
+  font-size: clamp(8px, 0.72vw, 13px);
+  line-height: 1.25;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.pdf-overlay-textarea {
+  resize: none;
+  padding: 6px 8px;
+}
+
+.pdf-overlay-input:focus,
+.pdf-overlay-textarea:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.pdf-overlay-checkbox {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pdf-overlay-checkbox span {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pdf-overlay-checkbox span::before,
+.pdf-overlay-checkbox span::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 68%;
+  border-radius: 999px;
+  background: #0f172a;
+  opacity: 0;
+  transform-origin: center;
+}
+
+.pdf-overlay-checkbox span::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.pdf-overlay-checkbox span::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.pdf-overlay-checkbox.is-checked span::before,
+.pdf-overlay-checkbox.is-checked span::after {
+  opacity: 1;
+}
+
+.pdf-page-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.9));
+  color: #475569;
+  font-weight: 600;
+}
+
+.pdf-validation-chip {
+  border-radius: 999px;
+  background: rgba(190, 24, 93, 0.08);
+  color: #be123c;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
