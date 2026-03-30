@@ -20,7 +20,6 @@ const REQUIRED_FIELDS = [
 	'email2',
 	'physicalAddressLine1',
 	'postalAddressLine1',
-	'customerNumber',
 	'authorityToTransact',
 	'designationCapacity',
 	'authorizedRepresentative',

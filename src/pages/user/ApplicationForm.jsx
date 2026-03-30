@@ -332,6 +332,18 @@ const DESIGNATION_OPTIONS = [
 	'Authorized Signatory',
 ]
 
+const AUTHORIZED_CAPACITY_OPTIONS = [
+	'Owner',
+	'Director',
+	'Managing Director',
+	'General Manager',
+	'Operations Manager',
+	'Sales Manager',
+	'Administrator',
+	'Authorized Signatory',
+	'Power of Attorney',
+]
+
 const MONTH_OPTIONS = [
 	'January',
 	'February',
@@ -354,6 +366,95 @@ const FORM_ONLY_FIELDS = {
 		id: 'signedYear',
 		label: 'Signed year',
 	},
+}
+
+const FORM_BOOK_STEPS = [
+	{
+		id: 'location',
+		title: 'Operating location',
+		description: 'Select zone, region, and district before continuing.',
+		fieldIds: ['zoneName', 'regionName', 'districtName'],
+		kind: 'location',
+	},
+	...DETAIL_SECTIONS.map((section, index) => ({
+		id: `detail-${index}`,
+		title: section.title,
+		description: section.description,
+		fieldIds: section.fields,
+		kind: 'detail',
+	})),
+	{
+		id: 'declarations',
+		title: 'Declarations',
+		description: 'Confirm the required declarations and consent options.',
+		fieldIds: [
+			'genderFemale',
+			'genderMale',
+			'creditCheckConsentYes',
+			'creditCheckConsentNo',
+			'declarationNoConflict',
+			'declarationHasConflict',
+			'natureOfInterest',
+		],
+		kind: 'declarations',
+	},
+	{
+		id: 'sales-channels',
+		title: 'Sales channels',
+		description: 'Select every sales channel that applies to the business.',
+		fieldIds: [...SALES_CHANNEL_FIELDS, 'salesChannelOtherText'],
+		kind: 'salesChannels',
+	},
+	{
+		id: 'responsibilities',
+		title: 'Responsibilities',
+		description: 'Select the responsibilities the applicant will handle.',
+		fieldIds: RESPONSIBILITY_FIELDS,
+		kind: 'responsibilities',
+	},
+	{
+		id: 'documents',
+		title: 'Required documents',
+		description: 'Upload the support files and preview the final filled application.',
+		fieldIds: REQUIRED_DOCUMENTS.map((document) => document.key),
+		kind: 'documents',
+	},
+]
+
+function BookProgress({ steps, activeStepIndex, onSelect }) {
+	return (
+		<div className="space-y-4">
+			<div className="flex items-center justify-between gap-3">
+				<p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-700">Step {activeStepIndex + 1} of {steps.length}</p>
+				<p className="text-sm text-slate-500">{Math.round(((activeStepIndex + 1) / steps.length) * 100)}% complete</p>
+			</div>
+			<div className="h-2 overflow-hidden rounded-full bg-slate-200">
+				<div
+					className="h-full rounded-full bg-blue-700 transition-all duration-300"
+					style={{ width: `${((activeStepIndex + 1) / steps.length) * 100}%` }}
+				/>
+			</div>
+			<div className="flex gap-2 overflow-x-auto pb-1">
+				{steps.map((step, index) => (
+					<button
+						key={step.id}
+						type="button"
+						onClick={() => onSelect(index)}
+						className={[
+							'shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition',
+							index === activeStepIndex
+								? 'border-blue-700 bg-blue-700 text-white'
+								: index < activeStepIndex
+									? 'border-blue-200 bg-blue-50 text-blue-800'
+									: 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900',
+						].join(' ')}
+					>
+						{step.title}
+					</button>
+				))}
+			</div>
+		</div>
+	)
 }
 
 function SignaturePad({ value, error, onChange }) {
@@ -516,11 +617,12 @@ function fieldInputType(fieldId) {
 function StandardTextField({ fieldId, value, error, onChange, signingLocationOptions }) {
 	const field = FIELD_MAP[fieldId] ?? FORM_ONLY_FIELDS[fieldId]
 
-	if (fieldId === 'citizenship' || fieldId === 'authorityToTransact' || fieldId === 'designationCapacity' || fieldId === 'signedAt' || fieldId === 'signedDay' || fieldId === 'signedMonth' || fieldId === 'signedYear') {
+	if (fieldId === 'citizenship' || fieldId === 'authorityToTransact' || fieldId === 'designationCapacity' || fieldId === 'authorizedCapacity' || fieldId === 'signedAt' || fieldId === 'signedDay' || fieldId === 'signedMonth' || fieldId === 'signedYear') {
 		const optionsByFieldId = {
 			citizenship: COUNTRY_OPTIONS,
 			authorityToTransact: AUTHORITY_OPTIONS,
 			designationCapacity: DESIGNATION_OPTIONS,
+			authorizedCapacity: AUTHORIZED_CAPACITY_OPTIONS,
 			signedAt: signingLocationOptions,
 			signedDay: DAY_OPTIONS,
 			signedMonth: MONTH_OPTIONS,
@@ -641,6 +743,7 @@ function ApplicationForm() {
 	const { user, role } = useAuth()
 	const [formData, setFormData] = useState(createInitialFormData)
 	const [documents, setDocuments] = useState({ outletPhoto: null, idDocument: null })
+	const [activeStepIndex, setActiveStepIndex] = useState(0)
 	const [errors, setErrors] = useState({})
 	const [catalog, setCatalog] = useState({ zones: [], regions: [], districts: [] })
 	const [loadingLocations, setLoadingLocations] = useState(true)
@@ -665,6 +768,7 @@ function ApplicationForm() {
 		() => [...new Set(catalog.districts.map((district) => district.name).filter(Boolean))].sort((left, right) => left.localeCompare(right)),
 		[catalog.districts],
 	)
+	const activeStep = FORM_BOOK_STEPS[activeStepIndex]
 
 	useEffect(() => {
 		return () => {
@@ -783,6 +887,11 @@ function ApplicationForm() {
 		setSubmissionMessage('')
 	}
 
+	function jumpToStep(nextIndex) {
+		setActiveStepIndex(Math.max(0, Math.min(FORM_BOOK_STEPS.length - 1, nextIndex)))
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}
+
 	async function handlePreview(event) {
 		event.preventDefault()
 		setSubmissionMessage('')
@@ -792,6 +901,14 @@ function ApplicationForm() {
 		setErrors(nextErrors)
 
 		if (Object.keys(nextErrors).length > 0) {
+			const firstErrorStepIndex = FORM_BOOK_STEPS.findIndex((step) =>
+				step.fieldIds.some((fieldId) => nextErrors[fieldId]),
+			)
+
+			if (firstErrorStepIndex >= 0) {
+				jumpToStep(firstErrorStepIndex)
+			}
+
 			setSubmissionError('Resolve the highlighted fields and required uploads before previewing the final application.')
 			return
 		}
@@ -864,6 +981,175 @@ function ApplicationForm() {
 		anchor.click()
 	}
 
+	function renderStepCardActions() {
+		if (activeStep.kind === 'documents') {
+			return (
+				<div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+					<div className="flex flex-wrap gap-3">
+						{activeStepIndex > 0 ? (
+							<Button variant="secondary" onClick={() => jumpToStep(activeStepIndex - 1)}>
+								Previous page
+							</Button>
+						) : null}
+						<Button variant="secondary" onClick={() => navigate('/dashboard')}>
+							Cancel
+						</Button>
+					</div>
+					<Button type="submit" disabled={previewLoading || submitting}>
+						{previewLoading ? 'Preparing preview...' : 'Preview filled application'}
+					</Button>
+				</div>
+			)
+		}
+
+		return (
+			<div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+				<div>
+					{activeStepIndex > 0 ? (
+						<Button variant="secondary" onClick={() => jumpToStep(activeStepIndex - 1)}>
+							Previous page
+						</Button>
+					) : null}
+				</div>
+				<Button onClick={() => jumpToStep(activeStepIndex + 1)}>
+					Next page
+				</Button>
+			</div>
+		)
+	}
+
+	function renderActiveStep() {
+		if (activeStep.kind === 'location') {
+			return (
+				<Card>
+					<div className="flex flex-col gap-2">
+						<h3 className="text-xl font-semibold text-slate-900">{activeStep.title}</h3>
+						<p className="text-sm text-slate-600">Select Zone, then Region, then District. District selection is enabled only after a region is chosen.</p>
+					</div>
+					{loadingLocations ? <p className="mt-4 text-sm text-slate-500">Loading locations...</p> : null}
+					<div className="mt-6 grid gap-4 md:grid-cols-3">
+						<label className="block">
+							<span className="mb-2 block text-sm font-medium text-slate-700">Zone</span>
+							<select value={formData.zoneId} onChange={handleZoneChange} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900" disabled={loadingLocations}>
+								<option value="">Select zone</option>
+								{catalog.zones.map((zone) => (
+									<option key={zone.id} value={zone.id}>{zone.name}</option>
+								))}
+							</select>
+							{errors.zoneName ? <p className="mt-2 text-sm text-rose-700">{errors.zoneName}</p> : null}
+						</label>
+						<label className="block">
+							<span className="mb-2 block text-sm font-medium text-slate-700">Region</span>
+							<select value={formData.regionId} onChange={handleRegionChange} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900" disabled={loadingLocations || !formData.zoneId}>
+								<option value="">{formData.zoneId ? 'Select region' : 'Select zone first'}</option>
+								{regions.map((region) => (
+									<option key={region.id} value={region.id}>{region.name}</option>
+								))}
+							</select>
+							{errors.regionName ? <p className="mt-2 text-sm text-rose-700">{errors.regionName}</p> : null}
+						</label>
+						<label className="block">
+							<span className="mb-2 block text-sm font-medium text-slate-700">District</span>
+							<select value={formData.districtId} onChange={handleDistrictChange} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900" disabled={loadingLocations || !formData.regionId}>
+								<option value="">{formData.regionId ? 'Select district' : 'Select region first'}</option>
+								{districts.map((district) => (
+									<option key={district.id} value={district.id}>{district.name}</option>
+								))}
+							</select>
+							{errors.districtName ? <p className="mt-2 text-sm text-rose-700">{errors.districtName}</p> : null}
+						</label>
+					</div>
+					{renderStepCardActions()}
+				</Card>
+			)
+		}
+
+		if (activeStep.kind === 'detail') {
+			return (
+				<Card>
+					<div className="flex flex-col gap-2">
+						<h3 className="text-xl font-semibold text-slate-900">{activeStep.title}</h3>
+						<p className="text-sm text-slate-600">{activeStep.description}</p>
+					</div>
+					<div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+						{activeStep.fieldIds.map((fieldId) => (
+							<div key={fieldId} className={fieldId === 'signature' ? 'md:col-span-2 xl:col-span-3' : ''}>
+								{fieldId === 'signature' ? (
+									<SignaturePad value={formData.signature ?? ''} error={errors.signature} onChange={handleFieldChange} />
+								) : (
+									<StandardTextField fieldId={fieldId} value={formData[fieldId] ?? ''} error={errors[fieldId]} onChange={handleFieldChange} signingLocationOptions={signingLocationOptions} />
+								)}
+							</div>
+						))}
+					</div>
+					{renderStepCardActions()}
+				</Card>
+			)
+		}
+
+		if (activeStep.kind === 'declarations') {
+			return (
+				<Card>
+					<div className="grid gap-5 xl:grid-cols-3">
+						{EXCLUSIVE_GROUPS.map((group) => (
+							<ExclusiveChoiceGroup key={group.groupName} title={group.title} description={group.description} groupName={group.groupName} optionIds={group.optionIds} values={formData} errorKey={group.errorKey} onChange={handleFieldChange} error={errors[group.errorKey]} />
+						))}
+					</div>
+					{formData.declarationHasConflict ? (
+						<div className="mt-6">
+							<StandardTextField fieldId="natureOfInterest" value={formData.natureOfInterest ?? ''} error={errors.natureOfInterest} onChange={handleFieldChange} signingLocationOptions={signingLocationOptions} />
+						</div>
+					) : null}
+					{renderStepCardActions()}
+				</Card>
+			)
+		}
+
+		if (activeStep.kind === 'salesChannels') {
+			return (
+				<Card>
+					<StandardCheckboxList title="Sales channels" description="Select every channel that applies to the application." fieldIds={SALES_CHANNEL_FIELDS} values={formData} onChange={handleFieldChange} />
+					{formData.salesChannelOther ? (
+						<div className="mt-6 max-w-md">
+							<StandardTextField fieldId="salesChannelOtherText" value={formData.salesChannelOtherText ?? ''} error={errors.salesChannelOtherText} onChange={handleFieldChange} />
+						</div>
+					) : null}
+					{errors.salesChannelAgency ? <p className="mt-4 text-sm text-rose-700">{errors.salesChannelAgency}</p> : null}
+					{renderStepCardActions()}
+				</Card>
+			)
+		}
+
+		if (activeStep.kind === 'responsibilities') {
+			return (
+				<Card>
+					<StandardCheckboxList title="Responsibilities" description="Select the responsibilities the applicant will handle." fieldIds={RESPONSIBILITY_FIELDS} values={formData} onChange={handleFieldChange} />
+					{errors.responsibilityCollectSubscription ? <p className="mt-4 text-sm text-rose-700">{errors.responsibilityCollectSubscription}</p> : null}
+					{renderStepCardActions()}
+				</Card>
+			)
+		}
+
+		return (
+			<Card>
+				<div className="flex flex-col gap-2">
+					<h3 className="text-xl font-semibold text-slate-900">Required documents</h3>
+					<p className="text-sm text-slate-600">Upload the mandatory support files. Only JPG, PNG, and PDF files up to 5MB are accepted.</p>
+				</div>
+				<div className="mt-6 grid gap-4 lg:grid-cols-2">
+					{REQUIRED_DOCUMENTS.map((document) => (
+						<FileUpload key={document.key} label={document.label} description={document.description} accept={document.accept} file={documents[document.key]} error={errors[document.key]} onChange={(file) => handleDocumentChange(document.key, file)} />
+					))}
+				</div>
+				<div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+					<h4 className="text-lg font-semibold text-slate-900">Ready to preview?</h4>
+					<p className="mt-2 text-sm text-slate-600">This final page works like the end of the book. Use preview to review the generated application pack before the final submit step.</p>
+				</div>
+				{renderStepCardActions()}
+			</Card>
+		)
+	}
+
 	return (
 		<div className="space-y-6">
 			<Card>
@@ -881,198 +1167,23 @@ function ApplicationForm() {
 				</div>
 			</Card>
 
+			<Card>
+				<BookProgress steps={FORM_BOOK_STEPS} activeStepIndex={activeStepIndex} onSelect={jumpToStep} />
+			</Card>
+
+			{submissionError ? (
+				<Card className="border-rose-200 bg-rose-50 text-rose-700">
+					{submissionError}
+				</Card>
+			) : null}
+			{submissionMessage ? (
+				<Card className="border-emerald-200 bg-emerald-50 text-emerald-700">
+					{submissionMessage}
+				</Card>
+			) : null}
+
 			<form className="space-y-6" onSubmit={handlePreview}>
-				<Card>
-					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-semibold text-slate-900">Operating location</h3>
-						<p className="text-sm text-slate-600">
-							Select Zone, then Region, then District. District selection is enabled only after a region is chosen.
-						</p>
-					</div>
-					{loadingLocations ? <p className="mt-4 text-sm text-slate-500">Loading locations...</p> : null}
-					<div className="mt-6 grid gap-4 md:grid-cols-3">
-						<label className="block">
-							<span className="mb-2 block text-sm font-medium text-slate-700">Zone</span>
-							<select
-								value={formData.zoneId}
-								onChange={handleZoneChange}
-								className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
-								disabled={loadingLocations}
-							>
-								<option value="">Select zone</option>
-								{catalog.zones.map((zone) => (
-									<option key={zone.id} value={zone.id}>
-										{zone.name}
-									</option>
-								))}
-							</select>
-							{errors.zoneName ? <p className="mt-2 text-sm text-rose-700">{errors.zoneName}</p> : null}
-						</label>
-						<label className="block">
-							<span className="mb-2 block text-sm font-medium text-slate-700">Region</span>
-							<select
-								value={formData.regionId}
-								onChange={handleRegionChange}
-								className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
-								disabled={loadingLocations || !formData.zoneId}
-							>
-								<option value="">{formData.zoneId ? 'Select region' : 'Select zone first'}</option>
-								{regions.map((region) => (
-									<option key={region.id} value={region.id}>
-										{region.name}
-									</option>
-								))}
-							</select>
-							{errors.regionName ? <p className="mt-2 text-sm text-rose-700">{errors.regionName}</p> : null}
-						</label>
-						<label className="block">
-							<span className="mb-2 block text-sm font-medium text-slate-700">District</span>
-							<select
-								value={formData.districtId}
-								onChange={handleDistrictChange}
-								className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
-								disabled={loadingLocations || !formData.regionId}
-							>
-								<option value="">{formData.regionId ? 'Select district' : 'Select region first'}</option>
-								{districts.map((district) => (
-									<option key={district.id} value={district.id}>
-										{district.name}
-									</option>
-								))}
-							</select>
-							{errors.districtName ? <p className="mt-2 text-sm text-rose-700">{errors.districtName}</p> : null}
-						</label>
-					</div>
-				</Card>
-
-				{DETAIL_SECTIONS.map((section) => (
-					<Card key={section.title}>
-						<div className="flex flex-col gap-2">
-							<h3 className="text-xl font-semibold text-slate-900">{section.title}</h3>
-							<p className="text-sm text-slate-600">{section.description}</p>
-						</div>
-						<div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-							{section.fields.map((fieldId) => (
-								<div key={fieldId} className={fieldId === 'signature' ? 'md:col-span-2 xl:col-span-3' : ''}>
-									{fieldId === 'signature' ? (
-										<SignaturePad
-											value={formData.signature ?? ''}
-											error={errors.signature}
-											onChange={handleFieldChange}
-										/>
-									) : (
-										<StandardTextField
-											fieldId={fieldId}
-											value={formData[fieldId] ?? ''}
-											error={errors[fieldId]}
-											onChange={handleFieldChange}
-											signingLocationOptions={signingLocationOptions}
-										/>
-									)}
-								</div>
-							))}
-						</div>
-					</Card>
-				))}
-
-				<Card>
-					<div className="grid gap-5 xl:grid-cols-3">
-						{EXCLUSIVE_GROUPS.map((group) => (
-							<ExclusiveChoiceGroup
-								key={group.groupName}
-								title={group.title}
-								description={group.description}
-								groupName={group.groupName}
-								optionIds={group.optionIds}
-								values={formData}
-								errorKey={group.errorKey}
-								onChange={handleFieldChange}
-								error={errors[group.errorKey]}
-							/>
-						))}
-					</div>
-					{formData.declarationHasConflict ? (
-						<div className="mt-6">
-							<StandardTextField
-								fieldId="natureOfInterest"
-								value={formData.natureOfInterest ?? ''}
-								error={errors.natureOfInterest}
-								onChange={handleFieldChange}
-								signingLocationOptions={signingLocationOptions}
-							/>
-						</div>
-					) : null}
-				</Card>
-
-				<Card>
-					<StandardCheckboxList
-						title="Sales channels"
-						description="Select every channel that applies to the application."
-						fieldIds={SALES_CHANNEL_FIELDS}
-						values={formData}
-						onChange={handleFieldChange}
-					/>
-					{formData.salesChannelOther ? (
-						<div className="mt-6 max-w-md">
-							<StandardTextField
-								fieldId="salesChannelOtherText"
-								value={formData.salesChannelOtherText ?? ''}
-								error={errors.salesChannelOtherText}
-								onChange={handleFieldChange}
-							/>
-						</div>
-					) : null}
-				</Card>
-
-				<Card>
-					<StandardCheckboxList
-						title="Responsibilities"
-						description="Select the responsibilities the applicant will handle."
-						fieldIds={RESPONSIBILITY_FIELDS}
-						values={formData}
-						onChange={handleFieldChange}
-					/>
-				</Card>
-
-				<Card>
-					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-semibold text-slate-900">Required documents</h3>
-						<p className="text-sm text-slate-600">
-							Upload the mandatory support files. Only JPG, PNG, and PDF files up to 5MB are accepted.
-						</p>
-					</div>
-					<div className="mt-6 grid gap-4 lg:grid-cols-2">
-						{REQUIRED_DOCUMENTS.map((document) => (
-							<FileUpload
-								key={document.key}
-								label={document.label}
-								description={document.description}
-								accept={document.accept}
-								file={documents[document.key]}
-								error={errors[document.key]}
-								onChange={(file) => handleDocumentChange(document.key, file)}
-							/>
-						))}
-					</div>
-					{submissionError ? (
-						<div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-							{submissionError}
-						</div>
-					) : null}
-					{submissionMessage ? (
-						<div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-							{submissionMessage}
-						</div>
-					) : null}
-					<div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-						<Button variant="secondary" onClick={() => navigate('/dashboard')}>
-							Cancel
-						</Button>
-						<Button type="submit" disabled={previewLoading || submitting}>
-							{previewLoading ? 'Preparing preview...' : 'Preview filled application'}
-						</Button>
-					</div>
-				</Card>
+				{renderActiveStep()}
 			</form>
 
 			<Modal
@@ -1081,7 +1192,7 @@ function ApplicationForm() {
 				isOpen={previewOpen}
 				onClose={() => setPreviewOpen(false)}
 				actions={
-					<div className="flex flex-wrap items-center justify-end gap-3">
+					<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
 						<Button variant="secondary" onClick={() => setPreviewOpen(false)}>
 							Back to edit
 						</Button>
@@ -1103,7 +1214,7 @@ function ApplicationForm() {
 							<iframe
 								src={previewUrl}
 								title="Application PDF preview"
-								className="h-[70vh] w-full rounded-2xl border border-slate-200 bg-white"
+								className="h-[48vh] w-full rounded-2xl border border-slate-200 bg-white sm:h-[70vh]"
 							/>
 						) : (
 							<div className="flex h-[50vh] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
