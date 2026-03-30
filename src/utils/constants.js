@@ -5,6 +5,7 @@ export const PDF_TEMPLATE_PATH = '/pdf/form.pdf'
 export const STORAGE_BUCKET = 'application-documents'
 
 export const APPLICATION_STATUS = Object.freeze({
+	INCOMPLETE: 'INCOMPLETE',
 	PENDING: 'PENDING',
 	APPROVED: 'APPROVED',
 	REJECTED: 'REJECTED',

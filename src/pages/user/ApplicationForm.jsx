@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import FileUpload from '../../components/form/FileUpload.jsx'
 import Modal from '../../components/ui/Modal.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
+import { useApplications } from '../../hooks/useApplications.js'
 import { createApplication } from '../../services/applicationService.js'
 import { uploadApplicationFile } from '../../services/fileService.js'
 import { getLocationCatalog } from '../../services/locationService.js'
@@ -740,10 +741,14 @@ function ExclusiveChoiceGroup({ title, description, groupName, optionIds, values
 
 function ApplicationForm() {
 	const navigate = useNavigate()
+	const { applicationId } = useParams()
 	const { user, role } = useAuth()
+	const { applications, loading: loadingApplications, refreshApplications } = useApplications()
 	const [formData, setFormData] = useState(createInitialFormData)
 	const [documents, setDocuments] = useState({ outletPhoto: null, idDocument: null })
 	const [activeStepIndex, setActiveStepIndex] = useState(0)
+	const [currentDraftId, setCurrentDraftId] = useState(applicationId ?? null)
+	const [draftMessage, setDraftMessage] = useState('')
 	const [errors, setErrors] = useState({})
 	const [catalog, setCatalog] = useState({ zones: [], regions: [], districts: [] })
 	const [loadingLocations, setLoadingLocations] = useState(true)
@@ -769,6 +774,18 @@ function ApplicationForm() {
 		[catalog.districts],
 	)
 	const activeStep = FORM_BOOK_STEPS[activeStepIndex]
+	const incompleteApplications = useMemo(
+		() => applications.filter((application) => application.status === APPLICATION_STATUS.INCOMPLETE),
+		[applications],
+	)
+	const resumeApplication = useMemo(() => {
+		if (applicationId) {
+			return incompleteApplications.find((application) => application.id === applicationId) ?? null
+		}
+
+		return incompleteApplications[0] ?? null
+	}, [applicationId, incompleteApplications])
+	const hydratedDraftRef = useRef('')
 
 	useEffect(() => {
 		return () => {
@@ -804,6 +821,39 @@ function ApplicationForm() {
 			isMounted = false
 		}
 	}, [])
+
+	useEffect(() => {
+		if (loadingApplications) {
+			return
+		}
+
+		if (!resumeApplication) {
+			if (applicationId && hydratedDraftRef.current !== `missing:${applicationId}`) {
+				hydratedDraftRef.current = `missing:${applicationId}`
+				setSubmissionError('Incomplete application not found. Start a new application or continue another saved draft.')
+			}
+			return
+		}
+
+		if (hydratedDraftRef.current === resumeApplication.id) {
+			return
+		}
+
+		hydratedDraftRef.current = resumeApplication.id
+		setCurrentDraftId(resumeApplication.id)
+		setFormData({
+			...createInitialFormData(),
+			...resumeApplication.formData,
+		})
+		setSubmissionError('')
+		setDraftMessage('Incomplete application loaded. Continue from where you stopped.')
+	}, [applicationId, loadingApplications, resumeApplication])
+
+	function hasDraftContent() {
+		return Object.entries(formData).some(([, value]) =>
+			typeof value === 'boolean' ? value : String(value ?? '').trim() !== '',
+		)
+	}
 
 	function handleFieldChange(field, value) {
 		setErrors((currentErrors) => {
@@ -887,9 +937,51 @@ function ApplicationForm() {
 		setSubmissionMessage('')
 	}
 
+	async function saveIncompleteApplication({ silent = false } = {}) {
+		if (!user || !hasDraftContent()) {
+			return null
+		}
+
+		setSubmissionError('')
+
+		try {
+			const savedApplication = await createApplication({
+				applicationId: currentDraftId,
+				userId: user.id,
+				applicantEmail: user.email,
+				formData: {
+					...formData,
+					status: APPLICATION_STATUS.INCOMPLETE,
+				},
+				status: APPLICATION_STATUS.INCOMPLETE,
+			})
+
+			setCurrentDraftId(savedApplication.id)
+			setDraftMessage('Incomplete application saved. You can continue it later from My Applications.')
+			if (!silent) {
+				setSubmissionMessage('Incomplete application saved successfully.')
+			}
+			await refreshApplications()
+			return savedApplication
+		} catch (saveError) {
+			setSubmissionError(saveError.message)
+			return null
+		}
+	}
+
 	function jumpToStep(nextIndex) {
 		setActiveStepIndex(Math.max(0, Math.min(FORM_BOOK_STEPS.length - 1, nextIndex)))
 		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}
+
+	async function persistAndJumpToStep(nextIndex) {
+		const saved = await saveIncompleteApplication({ silent: true })
+
+		if (hasDraftContent() && !saved && !currentDraftId) {
+			return
+		}
+
+		jumpToStep(nextIndex)
 	}
 
 	async function handlePreview(event) {
@@ -948,12 +1040,14 @@ function ApplicationForm() {
 
 		try {
 			const application = await createApplication({
+				applicationId: currentDraftId,
 				userId: user.id,
 				applicantEmail: user.email,
 				formData: {
 					...formData,
 					status: APPLICATION_STATUS.PENDING,
 				},
+				status: APPLICATION_STATUS.PENDING,
 			})
 
 			for (const document of REQUIRED_DOCUMENTS) {
@@ -961,7 +1055,10 @@ function ApplicationForm() {
 			}
 
 			setPreviewOpen(false)
+			setCurrentDraftId(null)
+			setDraftMessage('')
 			setSubmissionMessage('Application submitted successfully. Your status is now pending review.')
+			await refreshApplications()
 			navigate('/dashboard', { replace: true })
 		} catch (error) {
 			setSubmissionError(error.message)
@@ -987,10 +1084,13 @@ function ApplicationForm() {
 				<div className="mt-6 flex flex-wrap items-center justify-between gap-3">
 					<div className="flex flex-wrap gap-3">
 						{activeStepIndex > 0 ? (
-							<Button variant="secondary" onClick={() => jumpToStep(activeStepIndex - 1)}>
+							<Button variant="secondary" onClick={() => void persistAndJumpToStep(activeStepIndex - 1)}>
 								Previous page
 							</Button>
 						) : null}
+						<Button variant="secondary" onClick={() => void saveIncompleteApplication()}>
+							Save and finish later
+						</Button>
 						<Button variant="secondary" onClick={() => navigate('/dashboard')}>
 							Cancel
 						</Button>
@@ -1006,14 +1106,19 @@ function ApplicationForm() {
 			<div className="mt-6 flex flex-wrap items-center justify-between gap-3">
 				<div>
 					{activeStepIndex > 0 ? (
-						<Button variant="secondary" onClick={() => jumpToStep(activeStepIndex - 1)}>
+						<Button variant="secondary" onClick={() => void persistAndJumpToStep(activeStepIndex - 1)}>
 							Previous page
 						</Button>
 					) : null}
 				</div>
-				<Button onClick={() => jumpToStep(activeStepIndex + 1)}>
-					Next page
-				</Button>
+				<div className="flex flex-wrap gap-3">
+					<Button variant="secondary" onClick={() => void saveIncompleteApplication()}>
+						Save and finish later
+					</Button>
+					<Button onClick={() => void persistAndJumpToStep(activeStepIndex + 1)}>
+						Next page
+					</Button>
+				</div>
 			</div>
 		)
 	}
@@ -1167,8 +1272,14 @@ function ApplicationForm() {
 				</div>
 			</Card>
 
+			{draftMessage ? (
+				<Card className="border-blue-200 bg-blue-50 text-blue-800">
+					{draftMessage}
+				</Card>
+			) : null}
+
 			<Card>
-				<BookProgress steps={FORM_BOOK_STEPS} activeStepIndex={activeStepIndex} onSelect={jumpToStep} />
+				<BookProgress steps={FORM_BOOK_STEPS} activeStepIndex={activeStepIndex} onSelect={(index) => void persistAndJumpToStep(index)} />
 			</Card>
 
 			{submissionError ? (

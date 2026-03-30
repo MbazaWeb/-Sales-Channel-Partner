@@ -9,6 +9,7 @@ import { getFieldDisplayLabel, getFieldDisplayValue } from '../../utils/pdfGener
 
 function StatusBadge({ status }) {
 	const statusClassName = {
+		[APPLICATION_STATUS.INCOMPLETE]: 'bg-sky-100 text-sky-800',
 		[APPLICATION_STATUS.APPROVED]: 'bg-emerald-100 text-emerald-800',
 		[APPLICATION_STATUS.REJECTED]: 'bg-rose-100 text-rose-800',
 		[APPLICATION_STATUS.PENDING]: 'bg-amber-100 text-amber-800',
@@ -24,7 +25,9 @@ function StatusBadge({ status }) {
 function Dashboard() {
 	const { applications, loading, error } = useApplications()
 	const latestApplication = applications[0]
+	const latestIncompleteApplication = applications.find((application) => application.status === APPLICATION_STATUS.INCOMPLETE)
 	const total = applications.length
+	const incomplete = applications.filter((application) => application.status === APPLICATION_STATUS.INCOMPLETE).length
 	const pending = applications.filter((application) => application.status === APPLICATION_STATUS.PENDING).length
 	const approved = applications.filter((application) => application.status === APPLICATION_STATUS.APPROVED).length
 	const rejected = applications.filter((application) => application.status === APPLICATION_STATUS.REJECTED).length
@@ -51,10 +54,10 @@ function Dashboard() {
 					<h3 className="text-xl font-semibold text-slate-900">No applications submitted yet</h3>
 					<p className="mt-2 text-sm text-slate-600">Complete the SCP form to start the onboarding review process.</p>
 					<Link
-						to="/apply"
+						to={latestIncompleteApplication ? `/apply/${latestIncompleteApplication.id}` : '/apply'}
 						className="mt-5 inline-flex rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
 					>
-						Start application
+						{latestIncompleteApplication ? 'Complete application' : 'Start application'}
 					</Link>
 				</Card>
 			) : null}
@@ -63,6 +66,7 @@ function Dashboard() {
 				<div className="space-y-6">
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Total</p><p className="mt-3 text-3xl font-semibold text-slate-900">{total}</p></Card>
+						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Incomplete</p><p className="mt-3 text-3xl font-semibold text-slate-900">{incomplete}</p></Card>
 						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Pending</p><p className="mt-3 text-3xl font-semibold text-slate-900">{pending}</p></Card>
 						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Approved</p><p className="mt-3 text-3xl font-semibold text-slate-900">{approved}</p></Card>
 						<Card className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Rejected</p><p className="mt-3 text-3xl font-semibold text-slate-900">{rejected}</p></Card>
@@ -84,19 +88,35 @@ function Dashboard() {
 							</div>
 						</div>
 						<div className="mt-6 flex flex-wrap gap-3">
-							<Link
-								to="/apply"
-								className="inline-flex rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-							>
-								Submit another application
-							</Link>
+							{latestApplication.status === APPLICATION_STATUS.INCOMPLETE ? (
+								<Link
+									to={`/apply/${latestApplication.id}`}
+									className="inline-flex rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+								>
+									Complete application
+								</Link>
+							) : (
+								<Link
+									to={latestIncompleteApplication ? `/apply/${latestIncompleteApplication.id}` : '/apply'}
+									className="inline-flex rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+								>
+									{latestIncompleteApplication ? 'Complete saved draft' : 'Submit another application'}
+								</Link>
+							)}
 							{latestApplication.status === APPLICATION_STATUS.APPROVED ? (
 								<Button onClick={() => handleDownload(latestApplication)}>Download approved PDF</Button>
 							) : null}
 						</div>
+						{latestApplication.status === APPLICATION_STATUS.INCOMPLETE ? (
+							<div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+								This application is saved as incomplete. Use Complete application to continue from the saved draft.
+							</div>
+						) : null}
 						{latestApplication.status !== APPLICATION_STATUS.APPROVED ? (
 							<div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-								The full clean document becomes available after admin approval.
+								{latestApplication.status === APPLICATION_STATUS.INCOMPLETE
+									? 'Finish and submit the draft before it enters admin review.'
+									: 'The full clean document becomes available after admin approval.'}
 							</div>
 						) : null}
 					</Card>
@@ -139,6 +159,11 @@ function Dashboard() {
 										<p><span className="font-semibold text-slate-900">Submitted:</span> {new Date(application.created_at).toLocaleDateString()}</p>
 										<p><span className="font-semibold text-slate-900">TIN:</span> {application.tinNumber || 'Not provided'}</p>
 									</div>
+									{application.status === APPLICATION_STATUS.INCOMPLETE ? (
+										<Link to={`/apply/${application.id}`} className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 sm:w-auto">
+											Complete application
+										</Link>
+									) : null}
 									{application.status === APPLICATION_STATUS.APPROVED ? (
 										<Button className="mt-4 w-full sm:w-auto" onClick={() => handleDownload(application)}>
 											Download approved PDF
@@ -167,7 +192,11 @@ function Dashboard() {
 											<td className="py-4 pr-4 text-slate-700">{new Date(application.created_at).toLocaleDateString()}</td>
 											<td className="py-4 pr-4"><StatusBadge status={application.status} /></td>
 											<td className="py-4">
-												{application.status === APPLICATION_STATUS.APPROVED ? (
+												{application.status === APPLICATION_STATUS.INCOMPLETE ? (
+													<Link to={`/apply/${application.id}`} className="inline-flex rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800">
+														Complete application
+													</Link>
+												) : application.status === APPLICATION_STATUS.APPROVED ? (
 													<Button onClick={() => handleDownload(application)}>Download approved PDF</Button>
 												) : (
 													<span className="text-sm text-slate-500">Available after approval</span>

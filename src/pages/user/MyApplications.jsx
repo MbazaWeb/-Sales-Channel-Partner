@@ -5,6 +5,7 @@ import { useApplications } from '../../hooks/useApplications.js'
 import { getApplicationFilesWithUrls } from '../../services/fileService.js'
 import { APPLICATION_STATUS } from '../../utils/constants.js'
 import { downloadApplicationPdf } from '../../utils/pdfGenerator.js'
+import { Link } from 'react-router-dom'
 
 function formatTimestamp(value) {
 	if (!value) {
@@ -22,6 +23,7 @@ function formatTimestamp(value) {
 
 function StatusBadge({ status }) {
 	const statusClassName = {
+		[APPLICATION_STATUS.INCOMPLETE]: 'bg-sky-100 text-sky-800',
 		[APPLICATION_STATUS.APPROVED]: 'bg-emerald-100 text-emerald-800',
 		[APPLICATION_STATUS.REJECTED]: 'bg-rose-100 text-rose-800',
 		[APPLICATION_STATUS.PENDING]: 'bg-amber-100 text-amber-800',
@@ -127,6 +129,10 @@ function MyApplications() {
 									<Button className="w-full sm:w-auto" onClick={() => handleDownload(application)}>
 										Download approved PDF
 									</Button>
+								) : application.status === APPLICATION_STATUS.INCOMPLETE ? (
+									<Link to={`/apply/${application.id}`} className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 sm:w-auto">
+										Complete application
+									</Link>
 								) : null}
 							</Card>
 						))}
@@ -158,7 +164,11 @@ function MyApplications() {
 											<td className="px-6 py-5 text-slate-700">{formatTimestamp(application.created_at)}</td>
 											<td className="px-6 py-5 text-slate-700">{application.status === APPLICATION_STATUS.APPROVED ? formatTimestamp(application.updated_at) : 'Not approved yet'}</td>
 											<td className="px-6 py-5">
-												{application.status === APPLICATION_STATUS.APPROVED ? (
+												{application.status === APPLICATION_STATUS.INCOMPLETE ? (
+													<Link to={`/apply/${application.id}`} className="inline-flex rounded-2xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800">
+														Complete application
+													</Link>
+												) : application.status === APPLICATION_STATUS.APPROVED ? (
 													<Button onClick={() => handleDownload(application)}>Download approved PDF</Button>
 												) : (
 													<span className="text-sm text-slate-500">Available after approval</span>

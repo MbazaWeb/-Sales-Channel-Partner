@@ -1,4 +1,5 @@
 import { requireSupabase } from './supabaseClient.js'
+import { APPLICATION_STATUS } from '../utils/constants.js'
 
 const applicationSelect = `
 	id,
@@ -42,11 +43,11 @@ function normalizeApplication(application) {
 	}
 }
 
-export async function createApplication({ userId, applicantEmail, formData }) {
-	const client = requireSupabase()
-	const payload = {
-		user_id: userId,
-		applicant_email: applicantEmail,
+function buildApplicationPayload({ userId, applicantEmail, formData, status = APPLICATION_STATUS.PENDING }) {
+	return {
+		...(userId ? { user_id: userId } : {}),
+		...(applicantEmail ? { applicant_email: applicantEmail } : {}),
+		...(status ? { status } : {}),
 		tin_number: formData.tinNumber,
 		registration_identification_number: formData.registrationIdentificationNumber,
 		zone_name: formData.zoneName,
@@ -61,12 +62,16 @@ export async function createApplication({ userId, applicantEmail, formData }) {
 			.join(', '),
 		form_data: formData,
 	}
+}
 
-	const { data, error } = await client
-		.from('applications')
-		.insert(payload)
-		.select(applicationSelect)
-		.single()
+export async function createApplication({ userId, applicantEmail, formData, status = APPLICATION_STATUS.PENDING, applicationId = null }) {
+	const client = requireSupabase()
+	const payload = buildApplicationPayload({ userId, applicantEmail, formData, status })
+	const query = applicationId
+		? client.from('applications').update(payload).eq('id', applicationId)
+		: client.from('applications').insert(payload)
+
+	const { data, error } = await query.select(applicationSelect).single()
 
 	if (error) {
 		throw error
@@ -95,6 +100,7 @@ export async function getAllApplications() {
 	const { data, error } = await client
 		.from('applications')
 		.select(applicationSelect)
+		.neq('status', APPLICATION_STATUS.INCOMPLETE)
 		.order('created_at', { ascending: false })
 
 	if (error) {
@@ -124,7 +130,10 @@ export async function updateApplicationFormData(applicationId, formData) {
 	const client = requireSupabase()
 	const { data, error } = await client
 		.from('applications')
-		.update({ form_data: formData })
+		.update(buildApplicationPayload({
+			formData,
+			status: formData.status ?? undefined,
+		}))
 		.eq('id', applicationId)
 		.select(applicationSelect)
 		.single()

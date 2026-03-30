@@ -4,7 +4,7 @@ create table if not exists public.applications (
 	id uuid primary key default gen_random_uuid(),
 	user_id uuid not null,
 	applicant_email text not null,
-	status text not null default 'PENDING' check (status in ('PENDING', 'APPROVED', 'REJECTED')),
+	status text not null default 'PENDING' check (status in ('INCOMPLETE', 'PENDING', 'APPROVED', 'REJECTED')),
 	tin_number text not null,
 	registration_identification_number text,
 	zone_name text,

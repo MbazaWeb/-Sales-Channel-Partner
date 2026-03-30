@@ -50,6 +50,10 @@ const router = createBrowserRouter([
 						element: <ApplicationForm />,
 					},
 					{
+						path: 'apply/:applicationId',
+						element: <ApplicationForm />,
+					},
+					{
 						path: 'settings',
 						element: <Settings />,
 					},
