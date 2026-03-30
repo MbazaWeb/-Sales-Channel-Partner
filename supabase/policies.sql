@@ -36,8 +36,12 @@ for select
 to authenticated
 using (
 	auth.uid() = user_id
-	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	or auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Users can update their own applications"
@@ -52,12 +56,20 @@ on public.applications
 for update
 to authenticated
 using (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 )
 with check (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Admin can delete applications"
@@ -65,8 +77,12 @@ on public.applications
 for delete
 to authenticated
 using (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Users can create document metadata for own applications"
@@ -93,8 +109,12 @@ using (
 		where public.applications.id = application_documents.application_id
 			and (
 				public.applications.user_id = auth.uid()
-				or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-				or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+					or auth.uid() in (
+						'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+						'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+						'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+					)
+					or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 			)
 	)
 );
@@ -122,12 +142,20 @@ on public.location_zones
 for all
 to authenticated
 using (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 )
 with check (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Admin manages regions"
@@ -135,12 +163,20 @@ on public.location_regions
 for all
 to authenticated
 using (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 )
 with check (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Admin manages districts"
@@ -148,12 +184,20 @@ on public.location_districts
 for all
 to authenticated
 using (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 )
 with check (
-	auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Users can insert own profile"
@@ -162,8 +206,12 @@ for insert
 to authenticated
 with check (
 	auth.uid() = id
-	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	or auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Users can read own profile"
@@ -172,8 +220,12 @@ for select
 to authenticated
 using (
 	auth.uid() = id
-	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	or auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 create policy "Users can update own profile"
@@ -182,13 +234,21 @@ for update
 to authenticated
 using (
 	auth.uid() = id
-	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	or auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 )
 with check (
 	auth.uid() = id
-	or auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-	or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+	or auth.uid() in (
+		'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+		'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+		'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+	)
+	or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 );
 
 commit;
