@@ -248,12 +248,6 @@ function ApplicationReview() {
 						<Button variant="secondary" className="w-full sm:w-auto" onClick={() => navigate('/admin/applications')}>
 							Back to list
 						</Button>
-						<Button variant="secondary" className="w-full sm:w-auto" onClick={handleDownload}>
-							Download PDF
-						</Button>
-						<Button variant="danger" className="w-full sm:w-auto" onClick={handleDelete}>
-							Delete application
-						</Button>
 					</div>
 				</div>
 			</Card>
@@ -287,6 +281,12 @@ function ApplicationReview() {
 							<Button variant="secondary" className="w-full sm:w-auto" onClick={handleSaveReview} disabled={reviewAction !== ''}>
 								{reviewAction === 'save' ? 'Saving...' : 'Save review'}
 							</Button>
+							<Button variant="secondary" className="w-full sm:w-auto" onClick={handleDownload} disabled={reviewAction !== ''}>
+								{application.status === APPLICATION_STATUS.APPROVED ? 'Download approved PDF' : 'Download current PDF'}
+							</Button>
+							<Button variant="danger" className="w-full sm:w-auto" onClick={handleDelete} disabled={reviewAction !== ''}>
+								Delete application
+							</Button>
 							<Button
 								variant="danger"
 								className="w-full sm:w-auto"
@@ -302,6 +302,9 @@ function ApplicationReview() {
 							>
 								{reviewAction === APPLICATION_STATUS.APPROVED ? 'Approving...' : 'Approve'}
 							</Button>
+						</div>
+						<div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+							Admins can still download the full application PDF after approval.
 						</div>
 					</Card>
 

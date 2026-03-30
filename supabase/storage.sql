@@ -28,8 +28,12 @@ using (
 	bucket_id = 'application-documents'
 	and split_part(name, '/', 1) = 'applications'
 	and (
-		auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-		or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+		auth.uid() in (
+			'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+			'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+			'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+		)
+		or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 		or exists (
 			select 1
 			from public.applications
@@ -47,8 +51,12 @@ with check (
 	bucket_id = 'application-documents'
 	and split_part(name, '/', 1) = 'applications'
 	and (
-		auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-		or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+		auth.uid() in (
+			'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+			'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+			'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+		)
+		or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 		or exists (
 			select 1
 			from public.applications
@@ -66,8 +74,12 @@ using (
 	bucket_id = 'application-documents'
 	and split_part(name, '/', 1) = 'applications'
 	and (
-		auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-		or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+		auth.uid() in (
+			'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+			'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+			'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+		)
+		or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 		or exists (
 			select 1
 			from public.applications
@@ -80,8 +92,12 @@ with check (
 	bucket_id = 'application-documents'
 	and split_part(name, '/', 1) = 'applications'
 	and (
-		auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-		or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+		auth.uid() in (
+			'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+			'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+			'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+		)
+		or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 		or exists (
 			select 1
 			from public.applications
@@ -99,8 +115,12 @@ using (
 	bucket_id = 'application-documents'
 	and split_part(name, '/', 1) = 'applications'
 	and (
-		auth.uid() = '32fbf24f-6a93-4a19-af06-eded5be88496'::uuid
-		or auth.jwt() ->> 'email' = 'mbazzacodes@gmail.com'
+		auth.uid() in (
+			'32fbf24f-6a93-4a19-af06-eded5be88496'::uuid,
+			'f4e128d3-7869-4637-9da9-15e44acaa6a1'::uuid,
+			'c7325cea-ad1b-441b-af59-2b741292af90'::uuid
+		)
+		or auth.jwt() ->> 'email' in ('mbazzacodes@gmail.com', 'jumad@dstv.com', 'mika@dstv.com')
 		or exists (
 			select 1
 			from public.applications
