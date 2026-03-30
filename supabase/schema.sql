@@ -68,6 +68,11 @@ alter table public.applications add column if not exists zone_name text;
 alter table public.applications add column if not exists region_name text;
 alter table public.applications add column if not exists district_name text;
 
+alter table public.applications drop constraint if exists applications_status_check;
+alter table public.applications
+	add constraint applications_status_check
+	check (status in ('INCOMPLETE', 'PENDING', 'APPROVED', 'REJECTED'));
+
 delete from public.location_districts;
 delete from public.location_regions;
 delete from public.location_zones;
